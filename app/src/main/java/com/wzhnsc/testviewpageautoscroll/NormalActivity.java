@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Shader;
@@ -15,12 +16,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -43,7 +42,7 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import static com.nostra13.universalimageloader.utils.StorageUtils.getOwnCacheDirectory;
 
-public class FragmentBanner extends Fragment {
+public class NormalActivity extends Activity {
 
     public static class BannerInfo {
         // 标题
@@ -85,9 +84,6 @@ public class FragmentBanner extends Fragment {
     private TextView mtvTitle;
     private TextView mtvPagination;
 
-    // 本 Fragment 将提供的视图
-    private View mContentView;
-
     private ScheduledExecutorService mScheduledExecutorService;
 
     // 异步加载图片
@@ -105,34 +101,13 @@ public class FragmentBanner extends Fragment {
         }
     };
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mContentView = inflater.inflate(R.layout.banner, null);
-
-        // 使用 ImageLoader 之前先要初始化
-        initImageLoader();
-
-        initInterface();
-
-        return mContentView;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        mScheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        // 当 ViewPage 显示出来后，每两秒切换一次图片显示
-        mScheduledExecutorService.scheduleAtFixedRate(new ScrollTask(), 5, 5, TimeUnit.SECONDS);
-    }
-
     private void initImageLoader() {
         // 获取 ImageLoader 实例
         mImageLoader = ImageLoader.getInstance();
 
-        File cacheDir = getOwnCacheDirectory(getActivity().getApplicationContext(), IMAGE_CACHE_PATH);
+        File cacheDir = getOwnCacheDirectory(getApplicationContext(), IMAGE_CACHE_PATH);
 
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getActivity().getApplication())
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplication())
                                                                       .threadPoolSize(3) // default
                                                                       .threadPriority(Thread.NORM_PRIORITY - 1) // default
                                                                       .tasksProcessingOrder(QueueProcessingType.FIFO) // default
@@ -141,7 +116,7 @@ public class FragmentBanner extends Fragment {
                                                                       .diskCache(new UnlimitedDiskCache(cacheDir)) // default
                                                                       .diskCacheFileNameGenerator(new HashCodeFileNameGenerator()) // default
                                                                       .defaultDisplayImageOptions(DisplayImageOptions.createSimple()) // default
-                                                                      .imageDownloader(new BaseImageDownloader(getActivity().getApplication()))
+                                                                      .imageDownloader(new BaseImageDownloader(getApplication()))
                                                                       .build();
 
         mImageLoader.init(config);
@@ -198,32 +173,32 @@ public class FragmentBanner extends Fragment {
 
         // 定义的五个指示点
         mDotList = new ArrayList<View>();
-        View dot0 = mContentView.findViewById(R.id.v_dot0);
-        View dot1 = mContentView.findViewById(R.id.v_dot1);
-        View dot2 = mContentView.findViewById(R.id.v_dot2);
-        View dot3 = mContentView.findViewById(R.id.v_dot3);
-        View dot4 = mContentView.findViewById(R.id.v_dot4);
+        View dot0 = findViewById(R.id.v_dot0);
+        View dot1 = findViewById(R.id.v_dot1);
+        View dot2 = findViewById(R.id.v_dot2);
+        View dot3 = findViewById(R.id.v_dot3);
+        View dot4 = findViewById(R.id.v_dot4);
         mDotList.add(dot0);
         mDotList.add(dot1);
         mDotList.add(dot2);
         mDotList.add(dot3);
         mDotList.add(dot4);
 
-        mtvTitle = (TextView)mContentView.findViewById(R.id.tv_title);
+        mtvTitle = (TextView)findViewById(R.id.tv_title);
         // 设置标题
         mtvTitle.setText(mBannerDataList.get(mCurPicIndex).getStrTitle());
-
-        mtvPagination = (TextView)mContentView.findViewById(R.id.tv_pagination);
+        
+        mtvPagination = (TextView)findViewById(R.id.tv_pagination);
         // 设置页码
         mtvPagination.setText(mCurPicIndex + 1 + "/" + mBannerDataList.size());
 
-        mViewPager = (ViewPager)mContentView.findViewById(R.id.vp_banner);
+        mViewPager = (ViewPager)findViewById(R.id.vp_banner);
         // 设置填充ViewPager页面的适配器
         mViewPager.setAdapter(new ViewPageAdapter());
         // 设置一个监听器，当ViewPager中的页面改变时调用
         mViewPager.addOnPageChangeListener(new ViewPageChangeListener());
 
-        ImageView ivMasking = (ImageView)mContentView.findViewById(R.id.iv_masking);
+        ImageView ivMasking = (ImageView)findViewById(R.id.iv_masking);
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.masking_banner);
 
         BitmapDrawable bd = new BitmapDrawable(getResources(), bitmap);
@@ -238,7 +213,7 @@ public class FragmentBanner extends Fragment {
         // 动态添加图片和下面指示的圆点
         // 初始化图片资源
         for (int i = 0; i < mBannerDataList.size(); i++) {
-            ImageView imageView = new ImageView(getActivity().getApplicationContext());
+            ImageView imageView = new ImageView(getApplicationContext());
             // 保持原图大小，以原图的几何中心点和ImagView的几何中心点为基准，只绘制ImagView大小的图像
             imageView.setScaleType(ScaleType.CENTER_CROP);
 
@@ -334,7 +309,7 @@ public class FragmentBanner extends Fragment {
                 @Override
                 public void onClick(View v) {
                     // 处理跳转逻辑
-                    Toast.makeText(getActivity().getApplicationContext(), "You click" + position +"Image", Toast.LENGTH_LONG)
+                    Toast.makeText(getApplicationContext(), "You click" + position + "Image", Toast.LENGTH_LONG)
                          .show();
                 }
             });
@@ -368,5 +343,26 @@ public class FragmentBanner extends Fragment {
         @Override
         public void finishUpdate(ViewGroup arg0) {
         }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.banner);
+
+        // 使用 ImageLoader 之前先要初始化
+        initImageLoader();
+
+        initInterface();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mScheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        // 当 ViewPage 显示出来后，每两秒切换一次图片显示
+        mScheduledExecutorService.scheduleAtFixedRate(new ScrollTask(), 5, 5, TimeUnit.SECONDS);
     }
 }
