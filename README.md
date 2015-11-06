@@ -20,6 +20,7 @@
     />
     
 方法2：
+
     ImageView iv = (ImageView)mContentView.findViewById(R.id.background);
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
     BitmapDrawable bd = new BitmapDrawable(getResources(), bitmap);
