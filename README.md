@@ -6,18 +6,20 @@
 首先必须在 res/drawable 目录下包含一张图片，如：background.png
 
 方法1：在 res/drawable 中创建一个 xml 文件（如：background_repeat.xml）内容为：
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/background"
-    android:tileMode="repeat"
-    />
+
+    <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+        android:src="@drawable/background"
+        android:tileMode="repeat"
+        />
     
 然后再 Activity 的 xml 中添加如下内容：
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="@drawable/background_repeat"
-    />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="@drawable/background_repeat"
+        />
     
 方法2：
 
