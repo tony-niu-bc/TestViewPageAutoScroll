@@ -27,6 +27,7 @@
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
     BitmapDrawable bd = new BitmapDrawable(getResources(), bitmap);
     bd.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+    
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
         iv.setBackground(bd);
     }
