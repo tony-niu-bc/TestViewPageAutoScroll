@@ -33,4 +33,4 @@
         }
       
 ##Demo
-![](https://github.com/wzhnsc/TestDialogFragmentAnimation/blob/master/gif/TestViewPageAutoScroll.gif)
+![](https://github.com/wzhnsc/TestViewPageAutoScroll/blob/master/gif/TestViewPageAutoScroll.gif)
