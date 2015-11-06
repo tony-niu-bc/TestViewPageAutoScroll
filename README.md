@@ -20,17 +20,17 @@
     />
     
 方法2：
-        ImageView iv = (ImageView)mContentView.findViewById(R.id.background);
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+ImageView iv = (ImageView)mContentView.findViewById(R.id.background);
+Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
 
-        BitmapDrawable bd = new BitmapDrawable(getResources(), bitmap);
-        bd.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            iv.setBackground(bd);
-        }
-        else {
-            iv.setBackgroundDrawable(bd);
-        }
+BitmapDrawable bd = new BitmapDrawable(getResources(), bitmap);
+bd.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+    iv.setBackground(bd);
+}
+else {
+    iv.setBackgroundDrawable(bd);
+}
       
 ##Demo
 ![](https://github.com/wzhnsc/TestViewPageAutoScroll/blob/master/gif/TestViewPageAutoScroll.gif)
