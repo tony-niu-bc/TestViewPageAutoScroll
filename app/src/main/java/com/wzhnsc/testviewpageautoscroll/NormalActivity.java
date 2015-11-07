@@ -187,7 +187,7 @@ public class NormalActivity extends Activity {
         mtvTitle = (TextView)findViewById(R.id.tv_title);
         // 设置标题
         mtvTitle.setText(mBannerDataList.get(mCurPicIndex).getStrTitle());
-        
+
         mtvPagination = (TextView)findViewById(R.id.tv_pagination);
         // 设置页码
         mtvPagination.setText(mCurPicIndex + 1 + "/" + mBannerDataList.size());

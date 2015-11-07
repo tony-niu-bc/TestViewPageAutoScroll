@@ -12,18 +12,4 @@
         android:layout_height="182.67dp"
         />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="NormalActivityEdition"
-        android:onClick="showNAE"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ListViewEdition"
-        android:onClick="showLVE"
-        />
-
 </LinearLayout>

@@ -22,4 +22,9 @@ public class MainActivity extends FragmentActivity {
 		Intent intent = new Intent(this, NormalActivity.class);
 		startActivity(intent);
 	}
+
+	public void showLVE(View v) {
+		Intent intent = new Intent(this, ListViewActivity.class);
+		startActivity(intent);
+	}
 }
