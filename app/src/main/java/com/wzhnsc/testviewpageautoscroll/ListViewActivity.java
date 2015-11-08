@@ -56,13 +56,20 @@ public class ListViewActivity extends AppCompatActivity {
 //                convertView = mLayoutInflater.inflate(R.layout.list_view_normal_item, null);
 //            }
 
-            if (null == convertView) {
-                convertView = mLayoutInflater.inflate(R.layout.list_view_frame_item, null);
+            // 经测试得出：
+            // 动态创建 Fragment 然后添加到布局中的指定视图容器中不会崩溃，但也不会显示出 Fragment 视图
+//            if (null == convertView) {
+//                convertView = mLayoutInflater.inflate(R.layout.list_view_frame_item, null);
+//
+//                Fragment fragment = (Fragment)new FragmentBanner();
+//                getSupportFragmentManager().beginTransaction()
+//                        .add(R.id.frame_banner, fragment)
+//                                           .commit();
+//            }
 
-                Fragment fragment = (Fragment)new FragmentBanner();
-                getSupportFragmentManager().beginTransaction()
-                                           .replace(R.id.frame_banner, fragment)
-                                           .commit();
+            if (null == convertView)
+            {
+                convertView = mLayoutInflater.inflate(R.layout.list_view_custome_item, null);
             }
 
             return convertView;
