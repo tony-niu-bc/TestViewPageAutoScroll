@@ -1,6 +1,12 @@
 # TestViewPageAutoScroll
 基于 ViewPage 实现的轮播图
 
+After ADT 22 the PagerAdapter has gotten very strict about calling notifyDataSetChanged() before calling getCount().  
+It evidently keeps track of what it thinks the count should be and if this is not the same as what getCount() returns it throws this exception. 
+So the solution is simply to call notifyDataSetChanged() on the adapter every time the size of the data changes.
+
+在adt22之后，PagerAdapter对于notifyDataSetChanged()和getCount()的执行顺序是非常严格的，系统跟踪count的值，如果这个值和getCount返回的值不一致，就会抛出这个异常。所以为了保证getCount总是返回一个正确的值，那么在初始化ViewPager时，应先给Adapter初始化内容后再将该adapter传给ViewPager，如果不这样处理，在更新adapter的内容后，应该调用一下adapter的notifyDataSetChanged方法。
+
 使用一个小图片平铺到 ImageView 中或 Activity 背景
 
 首先必须在 res/drawable 目录下包含一张图片，如：background.png
