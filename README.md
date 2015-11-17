@@ -1,6 +1,8 @@
 # TestViewPageAutoScroll
 基于 ViewPage 实现的轮播图
 
+java.lang.IllegalStateException: The application's PagerAdapter changed the adapter's contents without calling PagerAdapter#notifyDataSetChanged! 
+
 After ADT 22 the PagerAdapter has gotten very strict about calling notifyDataSetChanged() before calling getCount().  
 It evidently keeps track of what it thinks the count should be and if this is not the same as what getCount() returns it throws this exception. 
 So the solution is simply to call notifyDataSetChanged() on the adapter every time the size of the data changes.
