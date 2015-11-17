@@ -1,7 +1,7 @@
 # TestViewPageAutoScroll
 基于 ViewPage 实现的轮播图
 
-1. ADT 22 以上 ViewPage 异常报错解决办法：
+ADT 22 以上 ViewPage 异常报错解决办法：
 java.lang.IllegalStateException: The application's PagerAdapter changed the adapter's contents without calling PagerAdapter#notifyDataSetChanged! 
 
 After ADT 22 the PagerAdapter has gotten very strict about calling notifyDataSetChanged() before calling getCount().  
@@ -12,7 +12,7 @@ So the solution is simply to call notifyDataSetChanged() on the adapter every ti
 
 -----------------------------------------------------------------------------------------------------------------------------
 
-2. 使用一个小图片平铺到 ImageView 中或 Activity 背景
+使用一个小图片平铺到 ImageView 中或 Activity 背景
 
 首先必须在 res/drawable 目录下包含一张图片，如：background.png
 
