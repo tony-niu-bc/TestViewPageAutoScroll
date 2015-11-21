@@ -42,11 +42,14 @@ import java.util.concurrent.TimeUnit;
 import static com.nostra13.universalimageloader.utils.StorageUtils.getOwnCacheDirectory;
 
 /**
- * TODO: document your custom view class.
+ * 自动且左右循环
  */
 public class ViewPageAutoScroll extends FrameLayout {
 
     private Context mContext;
+
+    // 标识是不是自动翻页
+    private boolean mbIsAutoScroll = false;
 
     public ViewPageAutoScroll(Context context) {
         super(context);
@@ -97,11 +100,10 @@ public class ViewPageAutoScroll extends FrameLayout {
     public static final String IMAGE_CACHE_PATH = "imageloader/Cache";
 
     private ViewPager mViewPager;
+    private ImageView mImagePage[] = new ImageView[3];
 
     // 滑动的图片集合
     private List<ImageView> mImageViewList;
-    // 当前图片的索引号
-    private int mCurPicIndex = 0;
 
     // 图片标题正文的那些点
     private List<View> mDotList;
@@ -122,7 +124,7 @@ public class ViewPageAutoScroll extends FrameLayout {
 
     private Runnable doUpdateUI = new Runnable() {
         public void run() {
-            mViewPager.setCurrentItem(mCurPicIndex);
+            mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1);
         }
     };
 
@@ -172,27 +174,60 @@ public class ViewPageAutoScroll extends FrameLayout {
         biData2.setStrBgUrl("http://g.hiphotos.baidu.com/image/w%3D310/sign=7cbcd7da78f40ad115e4c1e2672e1151/eaf81a4c510fd9f9a1edb58b262dd42a2934a45e.jpg");
         listBannerInfo.add(biData2);
 
-        BannerInfo biData3 = new BannerInfo();
-        biData3.setStrTitle("这是第三页");
-        biData3.setStrBgUrl("http://e.hiphotos.baidu.com/image/w%3D310/sign=392ce7f779899e51788e3c1572a6d990/8718367adab44aed22a58aeeb11c8701a08bfbd4.jpg");
-        listBannerInfo.add(biData3);
-
-        BannerInfo biData4 = new BannerInfo();
-        biData4.setStrTitle("这是第四页");
-        biData4.setStrBgUrl("http://d.hiphotos.baidu.com/image/w%3D310/sign=54884c82b78f8c54e3d3c32e0a282dee/a686c9177f3e670932e4cf9338c79f3df9dc55f2.jpg");
-        listBannerInfo.add(biData4);
-
-        BannerInfo biData5 = new BannerInfo();
-        biData5.setStrTitle("这是第五页");
-        biData5.setStrBgUrl("http://e.hiphotos.baidu.com/image/w%3D310/sign=66270b4fe8c4b7453494b117fffd1e78/0bd162d9f2d3572c7dad11ba8913632762d0c30d.jpg");
-        listBannerInfo.add(biData5);
+//        BannerInfo biData3 = new BannerInfo();
+//        biData3.setStrTitle("这是第三页");
+//        biData3.setStrBgUrl("http://e.hiphotos.baidu.com/image/w%3D310/sign=392ce7f779899e51788e3c1572a6d990/8718367adab44aed22a58aeeb11c8701a08bfbd4.jpg");
+//        listBannerInfo.add(biData3);
+//
+//        BannerInfo biData4 = new BannerInfo();
+//        biData4.setStrTitle("这是第四页");
+//        biData4.setStrBgUrl("http://d.hiphotos.baidu.com/image/w%3D310/sign=54884c82b78f8c54e3d3c32e0a282dee/a686c9177f3e670932e4cf9338c79f3df9dc55f2.jpg");
+//        listBannerInfo.add(biData4);
+//
+//        BannerInfo biData5 = new BannerInfo();
+//        biData5.setStrTitle("这是第五页");
+//        biData5.setStrBgUrl("http://e.hiphotos.baidu.com/image/w%3D310/sign=66270b4fe8c4b7453494b117fffd1e78/0bd162d9f2d3572c7dad11ba8913632762d0c30d.jpg");
+//        listBannerInfo.add(biData5);
 
         return listBannerInfo;
+    }
+
+    private void createImageView(int Position) {
+        ImageView imageView = new ImageView(mContext);
+        // 保持原图大小，以原图的几何中心点和ImagView的几何中心点为基准，只绘制ImagView大小的图像
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+        // 异步加载图片
+        mImageLoader.displayImage(mBannerDataList.get(Position).getStrBgUrl(), imageView, milOptions, new ImageLoadingListener() {
+            @Override
+            public void onLoadingStarted(String s, View view) {
+                Log.i("ViewPageAutoScroll", "onLoadingStarted");
+            }
+
+            @Override
+            public void onLoadingFailed(String s, View view, FailReason failReason) {
+                Log.i("ViewPageAutoScroll", "onLoadingFailed");
+            }
+
+            @Override
+            public void onLoadingComplete(String s, View view, Bitmap bitmap) {
+                Log.i("ViewPageAutoScroll", "onLoadingComplete");
+            }
+
+            @Override
+            public void onLoadingCancelled(String s, View view) {
+                Log.i("ViewPageAutoScroll", "onLoadingCancelled");
+            }
+        });
+
+        mImageViewList.add(imageView);
     }
 
     private void initInterface() {
         // 使用 ImageLoader 之前先要初始化
         initImageLoader();
+
+        mScrollTask = new ScrollTask();
 
         // 广告数据
         mBannerDataList = getTestData();
@@ -214,17 +249,19 @@ public class ViewPageAutoScroll extends FrameLayout {
 
         mtvTitle = (TextView)findViewById(R.id.tv_title);
         // 设置标题
-        mtvTitle.setText(mBannerDataList.get(mCurPicIndex).getStrTitle());
+        mtvTitle.setText(mBannerDataList.get(0).getStrTitle());
 
         mtvPagination = (TextView)findViewById(R.id.tv_pagination);
         // 设置页码
-        mtvPagination.setText(mCurPicIndex + 1 + "/" + mBannerDataList.size());
+        mtvPagination.setText(1 + "/" + mBannerDataList.size());
 
         mViewPager = (ViewPager)findViewById(R.id.vp_banner);
         // 设置填充ViewPager页面的适配器
         mViewPager.setAdapter(new ViewPageAdapter());
         // 设置一个监听器，当ViewPager中的页面改变时调用
         mViewPager.addOnPageChangeListener(new ViewPageChangeListener());
+
+        mViewPager.setCurrentItem(mViewPager.getAdapter().getCount() / 2);
 
         ImageView ivMasking = (ImageView)findViewById(R.id.iv_masking);
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.masking_banner);
@@ -241,48 +278,31 @@ public class ViewPageAutoScroll extends FrameLayout {
         // 动态添加图片和下面指示的圆点
         // 初始化图片资源
         for (int i = 0; i < mBannerDataList.size(); i++) {
-            ImageView imageView = new ImageView(mContext);
-            // 保持原图大小，以原图的几何中心点和ImagView的几何中心点为基准，只绘制ImagView大小的图像
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
-            // 异步加载图片
-            mImageLoader.displayImage(mBannerDataList.get(i).getStrBgUrl(), imageView, milOptions, new ImageLoadingListener() {
-                @Override
-                public void onLoadingStarted(String s, View view) {
-                    Log.i("displayImage", "onLoadingStarted");
-                }
-
-                @Override
-                public void onLoadingFailed(String s, View view, FailReason failReason) {
-                    Log.i("displayImage", "onLoadingFailed");
-                }
-
-                @Override
-                public void onLoadingComplete(String s, View view, Bitmap bitmap) {
-                    Log.i("displayImage", "onLoadingComplete");
-                }
-
-                @Override
-                public void onLoadingCancelled(String s, View view) {
-                    Log.i("displayImage", "onLoadingCancelled");
-                }
-            });
-
-            mImageViewList.add(imageView);
+            createImageView(i);
 
             mDotList.get(i).setVisibility(View.VISIBLE);
         }
+
+        mImagePage[0] = new ImageView(mContext);
+        mImagePage[0].setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+        mImagePage[1] = new ImageView(mContext);
+        mImagePage[1].setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+        mImagePage[2] = new ImageView(mContext);
+        mImagePage[2].setScaleType(ImageView.ScaleType.CENTER_CROP);
     }
 
     private class ScrollTask implements Runnable {
         @Override
         public void run() {
             synchronized (mViewPager) {
-                mCurPicIndex = (mCurPicIndex + 1) % mImageViewList.size();
                 mHandler.post(doUpdateUI);
             }
         }
     }
+
+    private ScrollTask mScrollTask;
 
     private class ViewPageChangeListener implements ViewPager.OnPageChangeListener {
 
@@ -290,46 +310,88 @@ public class ViewPageAutoScroll extends FrameLayout {
 
         @Override
         public void onPageScrollStateChanged(int arg0) {
+            Log.i("ViewPageAutoScroll", "ViewPageChangeListener - onPageScrollStateChanged - arg0 = " + arg0);
+
+            // 正在滑动
+            if (1 == arg0) {
+                // 手动翻页时要停了定时器
+                if (!mbIsAutoScroll) {
+                    mScheduledExecutorService.shutdown();
+                }
+            }
+            // 滑动完毕
+            else if (2 == arg0) {
+                // 手动翻页时要停了定时器
+                if (!mbIsAutoScroll) {
+                    mScheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+                    // 当 ViewPage 显示出来后，每五秒切换一次图片显示
+                    mScheduledExecutorService.scheduleAtFixedRate(mScrollTask, 5, 5, TimeUnit.SECONDS);
+                }
+                else {
+                    mbIsAutoScroll = false;
+                }
+            }
         }
 
         @Override
         public void onPageScrolled(int arg0, float arg1, int arg2) {
+            Log.i("ViewPageAutoScroll", "ViewPageChangeListener - onPageScrolled - " +
+                                        "arg0 = " + arg0 +
+                                        " arg1 = " + arg1 +
+                                        " arg2 = " + arg2);
         }
 
         @Override
         public void onPageSelected(int position) {
-            mCurPicIndex = position;
+            final int mapPos = position % mBannerDataList.size();
 
-            BannerInfo bannerInfo = mBannerDataList.get(position);
+            Log.i("ViewPageAutoScroll", "ViewPageChangeListener - onPageScrollStateChanged - " +
+                                        "position = " + position +
+                                        " mapPos = " + mapPos);
+
+            BannerInfo bannerInfo = mBannerDataList.get(mapPos);
             // 设置标题
             mtvTitle.setText(bannerInfo.getStrTitle());
             // 设置页码
-            mtvPagination.setText(position + 1 + "/" + mBannerDataList.size());
+            mtvPagination.setText(mapPos + 1 + "/" + mBannerDataList.size());
 
             mDotList.get(mOldPosition).setBackgroundResource(R.drawable.dot_normal);
-            mDotList.get(position).setBackgroundResource(R.drawable.dot_focused);
-            mOldPosition = position;
+            mDotList.get(mapPos).setBackgroundResource(R.drawable.dot_focused);
+            mOldPosition = mapPos;
         }
     }
 
     private class ViewPageAdapter extends PagerAdapter {
         @Override
         public int getCount() {
-            return mBannerDataList.size();
+            return (1 == mBannerDataList.size()) ? 1 : Integer.MAX_VALUE;
         }
 
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-            ImageView iv = mImageViewList.get(position);
+            final int mapPos = position % mBannerDataList.size();
+
+            Log.i("ViewPageAutoScroll", "ViewPageAdapter - instantiateItem - " +
+                                        "position = " + position +
+                                        " mapPos = " + mapPos);
+
+            ImageView iv = mImagePage[position % 3];
+
+            if (null != iv.getParent()) {
+                ((ViewGroup)iv.getParent()).removeView(iv);
+            }
+
+            iv.setImageBitmap(((BitmapDrawable)mImageViewList.get(mapPos).getDrawable()).getBitmap());
+
             ((ViewPager)container).addView(iv);
 
-            final BannerInfo bannerInfo = mBannerDataList.get(position);
+            final BannerInfo bannerInfo = mBannerDataList.get(mapPos);
             // 在这个方法里面设置图片的点击事件
             iv.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // 处理跳转逻辑
-                    Toast.makeText(mContext, "You click" + position + "Image", Toast.LENGTH_LONG)
+                    Toast.makeText(mContext, "You click" + mapPos + "Image", Toast.LENGTH_LONG)
                          .show();
                 }
             });
@@ -339,7 +401,18 @@ public class ViewPageAutoScroll extends FrameLayout {
 
         @Override
         public void destroyItem(ViewGroup arg0, int arg1, Object arg2) {
-            ((ViewPager)arg0).removeView((View)arg2);
+            Log.i("ViewPageAutoScroll", "ViewPageAdapter - destroyItem - arg1 = " + arg1);
+
+            // 循环时不可以在这里释放重复利用的视图，
+            // 因为左翻时是先instantiateItem创建新位置视图再在这里释放最右边的旧视图，就会出现空白页
+            // 右翻时则是先释放，再创建
+            /*
+            11-21 18:43:41.910 19297-19297/com.wzhnsc.testviewpageautoscroll I/ViewPageAutoScroll: ViewPageAdapter - destroyItem - arg1 = 1073741826
+            11-21 18:43:41.910 19297-19297/com.wzhnsc.testviewpageautoscroll I/ViewPageAutoScroll: ViewPageAdapter - instantiateItem - position = 1073741829 mapPos = 1
+            11-21 18:45:45.180 19297-19297/com.wzhnsc.testviewpageautoscroll I/ViewPageAutoScroll: ViewPageAdapter - instantiateItem - position = 1073741826 mapPos = 0
+            11-21 18:45:45.180 19297-19297/com.wzhnsc.testviewpageautoscroll I/ViewPageAutoScroll: ViewPageAdapter - destroyItem - arg1 = 1073741829
+             */
+//            ((ViewPager)arg0).removeView((View)arg2);
         }
 
         @Override
@@ -378,7 +451,7 @@ public class ViewPageAutoScroll extends FrameLayout {
 
         mScheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         // 当 ViewPage 显示出来后，每两秒切换一次图片显示
-        mScheduledExecutorService.scheduleAtFixedRate(new ScrollTask(), 5, 5, TimeUnit.SECONDS);
+        mScheduledExecutorService.scheduleAtFixedRate(mScrollTask, 5, 5, TimeUnit.SECONDS);
     }
 
     @Override
